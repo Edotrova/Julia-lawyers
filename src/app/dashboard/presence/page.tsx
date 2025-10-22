@@ -7,14 +7,14 @@ import { CalendarView } from '@/components/calendar/calendar-view'
 import { AulaCalendarView } from '@/components/courtroom/aula-calendar-view'
 import { ChatInterface } from '@/components/chat/chat-interface'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRefreshStats } from '@/hooks/use-refresh-stats'
 import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/lib/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
-export default function PresencePage() {
+function PresencePageContent() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -140,5 +140,13 @@ export default function PresencePage() {
           </div>
         </div>
     </DashboardLayout>
+  )
+}
+
+export default function PresencePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PresencePageContent />
+    </Suspense>
   )
 }
