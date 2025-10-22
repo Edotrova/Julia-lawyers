@@ -8,14 +8,14 @@ import { AulaCalendarView } from '@/components/courtroom/aula-calendar-view'
 import { ChatInterface } from '@/components/chat/chat-interface'
 import { ProfileSearch } from '@/components/dashboard/profile-search'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRefreshStats } from '@/hooks/use-refresh-stats'
 import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/lib/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -161,5 +161,13 @@ export default function DashboardPage() {
         </div>
       </div>
     </DashboardLayout>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DashboardPageContent />
+    </Suspense>
   )
 }
