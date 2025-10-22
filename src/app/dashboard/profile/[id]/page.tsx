@@ -110,7 +110,7 @@ export default function ProfilePage() {
       <div className="container mx-auto p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Profilo non trovato</h1>
-          <p className="text-gray-600 mb-6">L'avvocato che stai cercando non esiste o non è più disponibile.</p>
+          <p className="text-gray-600 mb-6">L&apos;avvocato che stai cercando non esiste o non è più disponibile.</p>
           <Link href="/dashboard">
             <Button>
               <ArrowLeft className="h-4 w-4 mr-2" />

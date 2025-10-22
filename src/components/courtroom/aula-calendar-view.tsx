@@ -28,7 +28,9 @@ type Aula = Database['public']['Tables']['aule']['Row'] & {
 
 type Tribunale = Database['public']['Tables']['tribunali']['Row']
 
-interface AulaCalendarViewProps {}
+interface AulaCalendarViewProps {
+  // Props can be added here in the future
+}
 
 export function AulaCalendarView({}: AulaCalendarViewProps = {}) {
   const [aule, setAule] = useState<Aula[]>([])

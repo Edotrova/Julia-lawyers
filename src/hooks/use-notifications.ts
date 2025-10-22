@@ -58,8 +58,8 @@ export function useNotifications() {
       
       // Carica i messaggi non letti (ricevuti ma non letti)
       // Prima prova con il campo read, se fallisce usa tutti i messaggi
-      let unreadMessages: any[] = []
-      let error: any = null
+      let unreadMessages: Database['public']['Tables']['messages']['Row'][] = []
+      let error: Error | null = null
 
       try {
         const { data, error: readError } = await supabase
@@ -86,7 +86,7 @@ export function useNotifications() {
         }
       } catch (err) {
         console.error('Errore nel caricamento dei messaggi:', err)
-        error = err
+        error = err instanceof Error ? err : new Error(String(err))
       }
 
       if (error) {
@@ -125,7 +125,7 @@ export function useNotifications() {
         .map(msg => msg.chat_room_id)
         .filter((id, index, self) => self.indexOf(id) === index)
 
-      let chatRooms: any[] = []
+      let chatRooms: Database['public']['Tables']['chat_rooms']['Row'][] = []
       if (chatRoomIds.length > 0) {
         const { data: roomsData } = await supabase
           .from('chat_rooms')
@@ -148,8 +148,8 @@ export function useNotifications() {
           message: msg.content,
           sender_id: msg.sender_id,
           sender_name: `${profile?.first_name} ${profile?.last_name}`,
-          chat_room_id: msg.chat_room_id,
-          receiver_id: msg.receiver_id,
+          chat_room_id: msg.chat_room_id || undefined,
+          receiver_id: msg.receiver_id || undefined,
           created_at: msg.created_at,
           read: false
         }

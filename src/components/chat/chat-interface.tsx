@@ -45,12 +45,12 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
   const [loading, setLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const [openChats, setOpenChats] = useState<{userId: string, lastMessage: string, timestamp: string, profile?: any}[]>([])
+  const [openChats, setOpenChats] = useState<{userId: string, lastMessage: string, timestamp: string, profile?: Database['public']['Tables']['profiles']['Row']}[]>([])
   const [openChatRooms, setOpenChatRooms] = useState<{roomId: string, lastMessage: string, timestamp: string, city: string, tribunale: string, aula: string}[]>([])
   
   // Filtri per chat delle aule
-  const [tribunali, setTribunali] = useState<any[]>([])
-  const [aule, setAule] = useState<any[]>([])
+  const [tribunali, setTribunali] = useState<Database['public']['Tables']['tribunali']['Row'][]>([])
+  const [aule, setAule] = useState<Database['public']['Tables']['aule']['Row'][]>([])
   const [cities, setCities] = useState<string[]>([])
   const [selectedCity, setSelectedCity] = useState<string>('')
   const [selectedType, setSelectedType] = useState<string>('')

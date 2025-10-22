@@ -22,7 +22,7 @@ export function NotificationBadge() {
   const [open, setOpen] = useState(false)
   const router = useRouter()
 
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: { id: string; type: string; title: string; message: string; sender_id: string; sender_name: string; chat_room_id?: string; receiver_id?: string; created_at: string; read: boolean }) => {
     // Marca come letto
     markAsRead(notification.id)
     
