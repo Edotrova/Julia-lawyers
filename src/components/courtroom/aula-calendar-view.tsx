@@ -28,9 +28,9 @@ type Aula = Database['public']['Tables']['aule']['Row'] & {
 
 type Tribunale = Database['public']['Tables']['tribunali']['Row']
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface AulaCalendarViewProps {
   // Props can be added here in the future
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 }
 
 export function AulaCalendarView({}: AulaCalendarViewProps = {}) {
