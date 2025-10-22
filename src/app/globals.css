@@ -1,26 +1,507 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Colori personalizzati per Julia */
+:root {
+  --canossa-red: #9B4A52; /* Bordeaux scuro più tendente al rosso */
+  --canossa-red-light: #B67A7A;
+  --canossa-red-dark: #7B2F37; /* Bordeaux più scuro per hover */
+  --canossa-red-subtle: #F5F0F1; /* Rosa molto tenue per sfondi */
+  --canossa-red-accent: #B8868B; /* Accento bordeaux tenue */
+}
+
+/* Ombreggiatura rossa per i click - più sottile */
+.click-red-shadow {
+  transition: all 0.2s ease;
+}
+
+.click-red-shadow:hover {
+  box-shadow: 0 2px 8px rgba(155, 74, 82, 0.15);
+}
+
+.click-red-shadow:active {
+  box-shadow: 0 1px 4px rgba(155, 74, 82, 0.25);
+  transform: translateY(1px);
+}
+
+/* Sostituzione colori blu con rosso bordeaux - più sottile */
+.text-blue-600 {
+  color: var(--canossa-red) !important;
+}
+
+.bg-blue-500 {
+  background-color: var(--canossa-red) !important;
+}
+
+.bg-blue-100 {
+  background-color: var(--canossa-red-subtle) !important;
+}
+
+.bg-blue-50 {
+  background-color: rgba(245, 240, 241, 0.5) !important;
+}
+
+.border-blue-300 {
+  border-color: var(--canossa-red-accent) !important;
+}
+
+.border-blue-200 {
+  border-color: rgba(184, 134, 139, 0.3) !important;
+}
+
+.ring-blue-500 {
+  --tw-ring-color: var(--canossa-red) !important;
+}
+
+.ring-blue-200 {
+  --tw-ring-color: var(--canossa-red-accent) !important;
+}
+
+/* Accenti sottili stile Airbnb */
+.canossa-accent {
+  color: var(--canossa-red-accent);
+}
+
+.canossa-subtle-bg {
+  background-color: var(--canossa-red-subtle);
+}
+
+.canossa-border-accent {
+  border-color: var(--canossa-red-accent);
+}
+
+/* Stili per il calendario - giorno selezionato */
+[data-radix-calendar-day][data-selected] {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+}
+
+[data-radix-calendar-day][data-selected]:hover {
+  background-color: var(--canossa-red-dark) !important;
+}
+
+/* Stili più specifici per il calendario */
+.rdp-day_selected {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+}
+
+.rdp-day_selected:hover {
+  background-color: var(--canossa-red-dark) !important;
+}
+
+/* Stili per il componente Calendar di shadcn/ui */
+[data-radix-calendar-day][data-selected="true"] {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+}
+
+[data-radix-calendar-day][data-selected="true"]:hover {
+  background-color: var(--canossa-red-dark) !important;
+}
+
+/* Pulsanti con sfondo bordeaux */
+.bg-canossa-red {
+  background-color: var(--canossa-red) !important;
+}
+
+/* Testo bordeaux */
+.text-canossa-red {
+  color: var(--canossa-red) !important;
+}
+
+.bg-canossa-red:hover {
+  background-color: var(--canossa-red-dark) !important;
+}
+
+.bg-canossa-red-dark {
+  background-color: var(--canossa-red-dark) !important;
+}
+
+/* Stili aggiuntivi per il calendario - copertura completa */
+[data-radix-calendar-day][aria-selected="true"] {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+}
+
+[data-radix-calendar-day][aria-selected="true"]:hover {
+  background-color: var(--canossa-red-dark) !important;
+}
+
+/* Stili per il calendario con classi Tailwind */
+.calendar-day-selected {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+}
+
+.calendar-day-selected:hover {
+  background-color: var(--canossa-red-dark) !important;
+}
+
+/* Stili specifici per il componente Calendar di shadcn/ui */
+[data-radix-calendar-day] {
+  border-radius: 0.375rem;
+}
+
+[data-radix-calendar-day][data-selected] {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+  border: none !important;
+}
+
+[data-radix-calendar-day][data-selected]:hover {
+  background-color: var(--canossa-red-dark) !important;
+}
+
+/* Stili per il calendario con classi specifiche di shadcn/ui */
+.rdp-day_selected {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.rdp-day_selected:hover {
+  background-color: var(--canossa-red-dark) !important;
+}
+
+/* Override per tutti i possibili selettori del calendario */
+[data-radix-calendar-day][aria-selected="true"],
+[data-radix-calendar-day][data-selected="true"],
+[data-radix-calendar-day][data-selected],
+.rdp-day_selected,
+[data-radix-calendar-day][aria-current="date"] {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+  border: none !important;
+}
+
+[data-radix-calendar-day][aria-selected="true"]:hover,
+[data-radix-calendar-day][data-selected="true"]:hover,
+[data-radix-calendar-day][data-selected]:hover,
+.rdp-day_selected:hover,
+[data-radix-calendar-day][aria-current="date"]:hover {
+  background-color: var(--canossa-red-dark) !important;
+}
+
+/* Classe personalizzata per il calendario */
+.canossa-calendar {
+  --canossa-calendar-selected: var(--canossa-red);
+  --canossa-calendar-selected-hover: var(--canossa-red-dark);
+}
+
+.canossa-calendar [data-radix-calendar-day][data-selected] {
+  background-color: var(--canossa-calendar-selected) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.canossa-calendar [data-radix-calendar-day][data-selected]:hover {
+  background-color: var(--canossa-calendar-selected-hover) !important;
+}
+
+/* Forza il colore della bilancia - CSS molto specifico */
+svg[data-lucide="scale"],
+svg[data-lucide="scale"] *,
+.lucide-scale,
+.lucide-scale * {
+  color: var(--canossa-red) !important;
+  fill: var(--canossa-red) !important;
+  stroke: var(--canossa-red) !important;
+}
+
+/* Forza il colore della bilancia in tutti i contesti */
+[data-lucide="scale"] {
+  color: var(--canossa-red) !important;
+  fill: var(--canossa-red) !important;
+  stroke: var(--canossa-red) !important;
+}
+
+/* Forza il colore della bilancia con selettori più specifici */
+div svg[data-lucide="scale"],
+button svg[data-lucide="scale"],
+span svg[data-lucide="scale"] {
+  color: var(--canossa-red) !important;
+  fill: var(--canossa-red) !important;
+  stroke: var(--canossa-red) !important;
+}
+
+/* CSS ULTRA AGRESSIVO per il calendario - sovrascrive tutto */
+[data-radix-calendar-day] {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][data-selected],
+[data-radix-calendar-day][data-selected="true"],
+[data-radix-calendar-day][aria-selected="true"],
+[data-radix-calendar-day][aria-current="date"] {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+[data-radix-calendar-day][data-selected]:hover,
+[data-radix-calendar-day][data-selected="true"]:hover,
+[data-radix-calendar-day][aria-selected="true"]:hover,
+[data-radix-calendar-day][aria-current="date"]:hover {
+  background-color: var(--canossa-red-dark) !important;
+  color: white !important;
+}
+
+/* Forza il colore per tutti i possibili selettori del calendario */
+.rdp-day_selected,
+.rdp-day_selected:hover,
+[data-radix-calendar-day][data-selected],
+[data-radix-calendar-day][data-selected]:hover {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Override finale per il calendario */
+*[data-radix-calendar-day][data-selected] {
+  background-color: var(--canossa-red) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* CSS FINALE ULTRA SPECIFICO - sovrascrive tutto */
+[data-radix-calendar-day][data-selected] {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+[data-radix-calendar-day][data-selected]:hover {
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+/* Forza il colore per tutti i possibili stati del calendario */
+[data-radix-calendar-day][data-selected="true"],
+[data-radix-calendar-day][aria-selected="true"],
+[data-radix-calendar-day][aria-current="date"] {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* CSS ULTRA AGRESSIVO per il calendario - sovrascrive TUTTO */
+[data-radix-calendar-day] {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][data-selected],
+[data-radix-calendar-day][data-selected="true"],
+[data-radix-calendar-day][aria-selected="true"],
+[data-radix-calendar-day][aria-current="date"],
+[data-radix-calendar-day][aria-selected="true"] {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+[data-radix-calendar-day][data-selected]:hover,
+[data-radix-calendar-day][data-selected="true"]:hover,
+[data-radix-calendar-day][aria-selected="true"]:hover,
+[data-radix-calendar-day][aria-current="date"]:hover {
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+/* Override finale per il calendario - sovrascrive tutto */
+*[data-radix-calendar-day][data-selected] {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* CSS per il componente Calendar di shadcn/ui */
+.rdp-day_selected {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_selected:hover {
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+/* CSS FINALE ULTRA SPECIFICO - sovrascrive tutto */
+[data-radix-calendar-day][data-selected] {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+[data-radix-calendar-day][data-selected]:hover {
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+/* Forza il colore per tutti i possibili stati del calendario */
+[data-radix-calendar-day][data-selected="true"],
+[data-radix-calendar-day][aria-selected="true"],
+[data-radix-calendar-day][aria-current="date"] {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* CSS per il componente Calendar di shadcn/ui - override finale */
+.rdp-day_selected {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_selected:hover {
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+/* CSS per il componente Calendar di shadcn/ui - override finale */
+.rdp-day_selected {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_selected:hover {
+  background-color: #7B2F37 !important;
+  color: white !important;
 }

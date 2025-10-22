@@ -1,0 +1,406 @@
+/* Override CSS per il calendario - sovrascrive le classi Tailwind */
+
+/* Rimuovi tutti i bordi neri del calendario */
+.rdp-day_button {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_button:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_button:focus-visible {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Forza il bordo bordeaux per il giorno corrente */
+.rdp-day_button[aria-current="date"] {
+  border: 2px solid #9B4A52 !important;
+  background-color: #9B4A52 !important;
+  color: white !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_button[aria-current="date"]:hover {
+  border: 2px solid #7B2F37 !important;
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+/* Forza il bordo bordeaux per tutti i possibili selettori del giorno corrente */
+.rdp-day_button[data-today="true"] {
+  border: 2px solid #9B4A52 !important;
+  background-color: #9B4A52 !important;
+  color: white !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_button[data-today="true"]:hover {
+  border: 2px solid #7B2F37 !important;
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+/* Override classi Tailwind del calendario - solo per il puntatore nero */
+.bg-primary {
+  background-color: transparent !important;
+}
+
+.text-primary-foreground {
+  color: inherit !important;
+}
+
+.bg-accent {
+  background-color: transparent !important;
+}
+
+.text-accent-foreground {
+  color: inherit !important;
+}
+
+/* Override per il puntatore nero del calendario */
+.rdp-day_button {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+.rdp-day_button[data-selected-single="true"] {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: 2px solid #9B4A52 !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_button[data-selected-single="true"]:hover {
+  background-color: #7B2F37 !important;
+  color: white !important;
+  border: 2px solid #7B2F37 !important;
+}
+
+/* Override per tutti i possibili stati del puntatore nero */
+.rdp-day_button[data-selected="true"] {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: 2px solid #9B4A52 !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_button[data-selected="true"]:hover {
+  background-color: #7B2F37 !important;
+  color: white !important;
+  border: 2px solid #7B2F37 !important;
+}
+
+.rdp-day_button[aria-selected="true"] {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: 2px solid #9B4A52 !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_button[aria-selected="true"]:hover {
+  background-color: #7B2F37 !important;
+  color: white !important;
+  border: 2px solid #7B2F37 !important;
+}
+
+.rdp-day_button[aria-current="date"] {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: 2px solid #9B4A52 !important;
+  box-shadow: none !important;
+}
+
+.rdp-day_button[aria-current="date"]:hover {
+  background-color: #7B2F37 !important;
+  color: white !important;
+  border: 2px solid #7B2F37 !important;
+}
+
+/* Override classi Tailwind specifiche per il calendario - solo per il puntatore nero */
+[data-radix-calendar-day].bg-primary {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+[data-radix-calendar-day].text-primary-foreground {
+  color: inherit !important;
+}
+
+[data-radix-calendar-day].bg-accent {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+[data-radix-calendar-day].text-accent-foreground {
+  color: inherit !important;
+}
+
+/* Override classi Tailwind per il calendario selezionato - solo per il puntatore nero */
+[data-radix-calendar-day][data-selected].bg-primary {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][data-selected].text-primary-foreground {
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][data-selected].bg-accent {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][data-selected].text-accent-foreground {
+  color: inherit !important;
+}
+
+/* Override classi Tailwind per il calendario hover - solo per il puntatore nero */
+[data-radix-calendar-day][data-selected].bg-primary:hover {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][data-selected].text-primary-foreground:hover {
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][data-selected].bg-accent:hover {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][data-selected].text-accent-foreground:hover {
+  color: inherit !important;
+}
+
+/* Override classi Tailwind per il calendario con aria-selected - solo per il puntatore nero */
+[data-radix-calendar-day][aria-selected="true"].bg-primary {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][aria-selected="true"].text-primary-foreground {
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][aria-selected="true"].bg-accent {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+[data-radix-calendar-day][aria-selected="true"].text-accent-foreground {
+  color: inherit !important;
+}
+
+/* Override classi Tailwind per il calendario con aria-current - solo per il puntatore nero */
+[data-radix-calendar-day][aria-current="date"].bg-primary {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: 2px solid #9B4A52 !important;
+}
+
+[data-radix-calendar-day][aria-current="date"].text-primary-foreground {
+  color: white !important;
+}
+
+[data-radix-calendar-day][aria-current="date"].bg-accent {
+  background-color: #9B4A52 !important;
+  color: white !important;
+  border: 2px solid #9B4A52 !important;
+}
+
+[data-radix-calendar-day][aria-current="date"].text-accent-foreground {
+  color: white !important;
+}
+
+/* Forza il bordo bordeaux per il giorno corrente con tutte le possibili combinazioni */
+[data-radix-calendar-day][aria-current="date"] {
+  border: 2px solid #9B4A52 !important;
+  background-color: #9B4A52 !important;
+  color: white !important;
+  box-shadow: none !important;
+}
+
+[data-radix-calendar-day][aria-current="date"]:hover {
+  border: 2px solid #7B2F37 !important;
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+/* Forza il bordo bordeaux per il giorno corrente con data-today */
+[data-radix-calendar-day][data-today="true"] {
+  border: 2px solid #9B4A52 !important;
+  background-color: #9B4A52 !important;
+  color: white !important;
+  box-shadow: none !important;
+}
+
+[data-radix-calendar-day][data-today="true"]:hover {
+  border: 2px solid #7B2F37 !important;
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+/* Override classi Tailwind per il calendario con data-selected="true" */
+[data-radix-calendar-day][data-selected="true"].bg-primary {
+  background-color: #9B4A52 !important;
+  color: white !important;
+}
+
+[data-radix-calendar-day][data-selected="true"].text-primary-foreground {
+  color: white !important;
+}
+
+[data-radix-calendar-day][data-selected="true"].bg-accent {
+  background-color: #9B4A52 !important;
+  color: white !important;
+}
+
+[data-radix-calendar-day][data-selected="true"].text-accent-foreground {
+  color: white !important;
+}
+
+/* Override classi Tailwind per il calendario con data-selected-single="true" */
+[data-selected-single="true"].bg-primary {
+  background-color: #9B4A52 !important;
+  color: white !important;
+}
+
+[data-selected-single="true"].text-primary-foreground {
+  color: white !important;
+}
+
+[data-selected-single="true"].bg-accent {
+  background-color: #9B4A52 !important;
+  color: white !important;
+}
+
+[data-selected-single="true"].text-accent-foreground {
+  color: white !important;
+}
+
+/* Override classi Tailwind per il calendario con data-range-start="true" */
+[data-range-start="true"].bg-primary {
+  background-color: #9B4A52 !important;
+  color: white !important;
+}
+
+[data-range-start="true"].text-primary-foreground {
+  color: white !important;
+}
+
+[data-range-start="true"].bg-accent {
+  background-color: #9B4A52 !important;
+  color: white !important;
+}
+
+[data-range-start="true"].text-accent-foreground {
+  color: white !important;
+}
+
+/* Override classi Tailwind per il calendario con data-range-end="true" */
+[data-range-end="true"].bg-primary {
+  background-color: #9B4A52 !important;
+  color: white !important;
+}
+
+[data-range-end="true"].text-primary-foreground {
+  color: white !important;
+}
+
+[data-range-end="true"].bg-accent {
+  background-color: #9B4A52 !important;
+  color: white !important;
+}
+
+[data-range-end="true"].text-accent-foreground {
+  color: white !important;
+}
+
+/* Override classi Tailwind per il calendario con data-range-middle="true" */
+[data-range-middle="true"].bg-primary {
+  background-color: #9B4A52 !important;
+  color: white !important;
+}
+
+[data-range-middle="true"].text-primary-foreground {
+  color: white !important;
+}
+
+[data-range-middle="true"].bg-accent {
+  background-color: #9B4A52 !important;
+  color: white !important;
+}
+
+[data-range-middle="true"].text-accent-foreground {
+  color: white !important;
+}
+
+/* Regole con massima specificità per forzare il bordo bordeaux del giorno corrente */
+.rdp .rdp-day_button[aria-current="date"] {
+  border: 2px solid #9B4A52 !important;
+  background-color: #9B4A52 !important;
+  color: white !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.rdp .rdp-day_button[aria-current="date"]:hover {
+  border: 2px solid #7B2F37 !important;
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+.rdp .rdp-day_button[aria-current="date"]:focus {
+  border: 2px solid #9B4A52 !important;
+  background-color: #9B4A52 !important;
+  color: white !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.rdp .rdp-day_button[aria-current="date"]:focus-visible {
+  border: 2px solid #9B4A52 !important;
+  background-color: #9B4A52 !important;
+  color: white !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Regole per data-today con massima specificità */
+.rdp .rdp-day_button[data-today="true"] {
+  border: 2px solid #9B4A52 !important;
+  background-color: #9B4A52 !important;
+  color: white !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.rdp .rdp-day_button[data-today="true"]:hover {
+  border: 2px solid #7B2F37 !important;
+  background-color: #7B2F37 !important;
+  color: white !important;
+}
+
+.rdp .rdp-day_button[data-today="true"]:focus {
+  border: 2px solid #9B4A52 !important;
+  background-color: #9B4A52 !important;
+  color: white !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.rdp .rdp-day_button[data-today="true"]:focus-visible {
+  border: 2px solid #9B4A52 !important;
+  background-color: #9B4A52 !important;
+  color: white !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
