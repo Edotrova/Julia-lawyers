@@ -217,11 +217,11 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
         const roomData = message.chat_rooms
         
         console.log('🔍 Room data:', roomData)
-        console.log('🔍 Room data.name:', (roomData as any)?.name)
+        console.log('🔍 Room data.name:', (roomData as Database['public']['Tables']['chat_rooms']['Row'][])?.[0]?.name)
         
         if (!chatRoomMap.has(roomId)) {
           // Usa il nome dalla tabella chat_rooms e rimuovi i primi 5 caratteri ("Chat ")
-          const roomName = (roomData as any)?.name || 'Aula'
+          const roomName = (roomData as Database['public']['Tables']['chat_rooms']['Row'][])?.[0]?.name || 'Aula'
           const aulaName = roomName.startsWith('Chat ') ? roomName.substring(5) : roomName
           
           console.log('🔍 Room name:', roomName)
