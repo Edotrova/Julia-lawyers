@@ -86,34 +86,80 @@
     font-size: 11px !important;
     padding: 3px !important;
   }
+  
+  /* Regole aggressive per mobile */
+  .rdp-table,
+  .rdp-table *,
+  .rdp-day_button,
+  .rdp-day_button * {
+    border: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
 }
 
-/* Rimuovi tutti i bordi e linee del calendario */
-.rdp-day_button {
+/* Rimuovi TUTTI i bordi e linee del calendario - regole aggressive */
+.rdp-day_button,
+.rdp-day_button:focus,
+.rdp-day_button:hover,
+.rdp-day_button:active {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
 }
 
 /* Rimuovi linee interne della tabella */
-.rdp-table {
+.rdp-table,
+.rdp-table * {
   border-collapse: separate !important;
   border-spacing: 0 !important;
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
 }
 
-.rdp-table td {
+.rdp-table td,
+.rdp-table th,
+.rdp-table tr {
   border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
   padding: 0 !important;
 }
 
-.rdp-table tr {
-  border: none !important;
-}
-
 /* Rimuovi linee tra le celle */
-.rdp-day_button + .rdp-day_button {
+.rdp-day_button + .rdp-day_button,
+.rdp-day_button:not(:first-child),
+.rdp-day_button:not(:last-child) {
   border-left: none !important;
   border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+}
+
+/* Rimuovi linee da tutte le classi possibili */
+.rdp-day,
+.rdp-day_selected,
+.rdp-day_today,
+.rdp-day_outside,
+.rdp-day_disabled {
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
 }
 
 .rdp-day_button:focus {
