@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AddUdienzaForm } from './add-udienza-form'
+import { EditUdienzaForm } from './edit-udienza-form'
 import { format, isToday, isTomorrow, isYesterday } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { Plus, Clock, MapPin, Users } from 'lucide-react'
@@ -25,6 +26,8 @@ export function CalendarView() {
   const [showDayPopup, setShowDayPopup] = useState(false)
   const [popupDate, setPopupDate] = useState<Date | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [showEditForm, setShowEditForm] = useState(false)
+  const [selectedUdienza, setSelectedUdienza] = useState<Udienza | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -115,6 +118,28 @@ export function CalendarView() {
     }
   }
 
+  const handleEditUdienza = (udienza: Udienza) => {
+    setSelectedUdienza(udienza)
+    setShowEditForm(true)
+  }
+
+  const handleDeleteUdienza = async (udienzaId: string) => {
+    try {
+      const { error } = await supabase
+        .from('udienze')
+        .delete()
+        .eq('id', udienzaId)
+
+      if (error) {
+        console.error('Errore nella cancellazione dell\'udienza:', error)
+      } else {
+        fetchData() // Ricarica i dati
+      }
+    } catch (error) {
+      console.error('Errore imprevisto:', error)
+    }
+  }
+
   const getStatusText = (status: string) => {
     switch (status) {
       case 'scheduled': return 'Programmata'
@@ -165,6 +190,32 @@ export function CalendarView() {
             />
           </DialogContent>
             </Dialog>
+
+            {/* Dialog per modificare udienza */}
+            <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="lg:pb-4 pb-2">
+                  <DialogTitle className="hidden lg:block">Modifica Udienza</DialogTitle>
+                  <DialogDescription className="hidden lg:block">
+                    Modifica i dettagli della tua udienza
+                  </DialogDescription>
+                </DialogHeader>
+                {selectedUdienza && (
+                  <EditUdienzaForm 
+                    udienza={selectedUdienza}
+                    onSuccess={() => {
+                      fetchData()
+                      setShowEditForm(false)
+                      setSelectedUdienza(null)
+                    }} 
+                    onCancel={() => {
+                      setShowEditForm(false)
+                      setSelectedUdienza(null)
+                    }}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -210,14 +261,32 @@ export function CalendarView() {
                     <div key={udienza.id} className="border rounded-lg p-3 xl:p-4 space-y-2">
                       <div className="flex justify-between items-start">
                         <h4 className="font-medium text-sm xl:text-base">{udienza.title}</h4>
-                        <Badge className={`${getStatusColor(udienza.status)} text-xs xl:text-sm`}>
-                          {getStatusText(udienza.status)}
-                        </Badge>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={`${getStatusColor(udienza.status)} text-xs xl:text-sm`}>
+                            {getStatusText(udienza.status)}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditUdienza(udienza)}
+                            className="text-xs"
+                          >
+                            Modifica
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteUdienza(udienza.id)}
+                            className="text-xs"
+                          >
+                            Elimina
+                          </Button>
+                        </div>
                       </div>
                       
                       <div className="flex items-center text-xs xl:text-sm text-gray-600">
                         <Clock className="mr-2 h-3 w-3 xl:h-4 xl:w-4" />
-                        {udienza.time} ({udienza.duration} min)
+                        {udienza.time}
                       </div>
                       
                       <div className="flex items-center text-xs xl:text-sm text-gray-600">
@@ -268,9 +337,27 @@ export function CalendarView() {
                       </p>
                     </div>
                   </div>
-                  <Badge className={getStatusColor(udienza.status)}>
-                    {getStatusText(udienza.status)}
-                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge className={getStatusColor(udienza.status)}>
+                      {getStatusText(udienza.status)}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEditUdienza(udienza)}
+                      className="text-xs"
+                    >
+                      Modifica
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeleteUdienza(udienza.id)}
+                      className="text-xs"
+                    >
+                      Elimina
+                    </Button>
+                  </div>
                 </div>
               ))}
           </div>
@@ -316,7 +403,7 @@ export function CalendarView() {
                       
                       <div className="flex items-center text-sm text-gray-600">
                         <Clock className="mr-2 h-4 w-4" />
-                        {udienza.time} ({udienza.duration} min)
+                        {udienza.time}
                       </div>
                       
                       <div className="flex items-center text-sm text-gray-600">

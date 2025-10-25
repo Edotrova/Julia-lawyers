@@ -16,18 +16,23 @@ type Aula = Database['public']['Tables']['aule']['Row'] & {
 
 type Tribunale = Database['public']['Tables']['tribunali']['Row']
 
-interface AddUdienzaFormProps {
+type Udienza = Database['public']['Tables']['udienze']['Row'] & {
+  aule: Aula
+}
+
+interface EditUdienzaFormProps {
+  udienza: Udienza
   onSuccess: () => void
   onCancel?: () => void
 }
 
-export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
+export function EditUdienzaForm({ udienza, onSuccess, onCancel }: EditUdienzaFormProps) {
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    date: '',
-    time: '',
-    aula_id: '',
+    title: udienza.title || '',
+    description: udienza.description || '',
+    date: udienza.date || '',
+    time: udienza.time || '',
+    aula_id: udienza.aula_id || '',
   })
   const [loading, setLoading] = useState(false)
   const [tribunali, setTribunali] = useState<Tribunale[]>([])
@@ -36,11 +41,17 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
   const [selectedCity, setSelectedCity] = useState<string>('')
   const [selectedType, setSelectedType] = useState<string>('')
   const [selectedTribunale, setSelectedTribunale] = useState<string>('')
-  const [selectedAula, setSelectedAula] = useState<string>('')
+  const [selectedAula, setSelectedAula] = useState<string>(udienza.aula_id || '')
   const supabase = createClient()
 
   useEffect(() => {
     fetchTribunali()
+    // Imposta i filtri basati sull'aula corrente
+    if (udienza.aule) {
+      setSelectedCity(udienza.aule.tribunali.circondario || '')
+      setSelectedType(udienza.aule.tribunali.settore || '')
+      setSelectedTribunale(udienza.aule.tribunali.id)
+    }
   }, [])
 
   useEffect(() => {
@@ -55,42 +66,17 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
     }
   }, [selectedTribunale])
 
-  useEffect(() => {
-    if (selectedType && tribunali.length > 0) {
-      // Filtra i tribunali per tipo quando cambia il tipo
-      const filteredTribunali = tribunali.filter(t => t.type === selectedType)
-      if (filteredTribunali.length > 0) {
-        setSelectedTribunale(filteredTribunali[0].id)
-      }
-    }
-  }, [selectedType, tribunali])
-
-  useEffect(() => {
-    if (selectedAula) {
-      setFormData(prev => ({ ...prev, aula_id: selectedAula }))
-    }
-  }, [selectedAula])
-
   const fetchTribunali = async () => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('tribunali')
         .select('*')
-        .order('city')
+        .order('nome')
 
-      if (error) {
-        console.error('Errore nel caricamento dei tribunali:', error)
-        return
-      }
-
-      setTribunali(data || [])
-      
-      // Estrai le città uniche
-      const uniqueCities = [...new Set(data?.map(t => t.city) || [])].sort()
-      setCities(uniqueCities)
-      
-      if (data && data.length > 0) {
-        setSelectedCity(data[0].city)
+      if (data) {
+        setTribunali(data)
+        const uniqueCities = [...new Set(data.map(t => t.circondario).filter(Boolean))]
+        setCities(uniqueCities)
       }
     } catch (error) {
       console.error('Errore nel caricamento dei tribunali:', error)
@@ -98,20 +84,17 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
   }
 
   const fetchTribunaliByCity = async () => {
-    if (!selectedCity) return
-
     try {
       const { data } = await supabase
         .from('tribunali')
         .select('*')
-        .eq('city', selectedCity)
-        .order('type')
+        .eq('circondario', selectedCity)
+        .order('nome')
 
-      setTribunali(data || [])
-      
-      if (data && data.length > 0) {
-        setSelectedType(data[0].type)
-        setSelectedTribunale(data[0].id)
+      if (data) {
+        setTribunali(data)
+        const uniqueTypes = [...new Set(data.map(t => t.settore).filter(Boolean))]
+        // setTypes(uniqueTypes) // Non necessario per ora
       }
     } catch (error) {
       console.error('Errore nel caricamento dei tribunali per città:', error)
@@ -119,8 +102,6 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
   }
 
   const fetchAuleByTribunale = async () => {
-    if (!selectedTribunale) return
-
     try {
       const { data } = await supabase
         .from('aule')
@@ -129,12 +110,10 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
           tribunali (*)
         `)
         .eq('tribunale_id', selectedTribunale)
-        .order('name')
+        .order('nome')
 
-      setAule(data || [])
-      
-      if (data && data.length > 0) {
-        setSelectedAula(data[0].id)
+      if (data) {
+        setAule(data)
       }
     } catch (error) {
       console.error('Errore nel caricamento delle aule:', error)
@@ -143,17 +122,22 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!formData.title || !formData.date || !formData.time || !formData.aula_id) {
+      toast.error('Compila tutti i campi obbligatori')
+      return
+    }
+
     setLoading(true)
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         toast.error('Utente non autenticato')
-        setLoading(false)
         return
       }
 
-      // Carica il profilo dell'utente per ottenere nome e cognome
+      // Carica il profilo per ottenere il nome dell'autore
       const { data: profile } = await supabase
         .from('profiles')
         .select('first_name, last_name')
@@ -164,31 +148,24 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
         ? `${profile.first_name} ${profile.last_name}`
         : 'Avvocato Sconosciuto'
 
-        const { error } = await supabase
-          .from('udienze')
-          .insert({
-            user_id: user.id,
-            aula_id: formData.aula_id,
-            title: formData.title,
-            description: formData.description || null,
-            date: formData.date,
-            time: formData.time,
-            status: 'scheduled',
-            autore: autore, // Aggiungi il nome dell'autore
-          })
+      const { error } = await supabase
+        .from('udienze')
+        .update({
+          aula_id: formData.aula_id,
+          title: formData.title,
+          description: formData.description || null,
+          date: formData.date,
+          time: formData.time,
+          status: 'scheduled',
+          autore: autore,
+        })
+        .eq('id', udienza.id)
 
       if (error) {
-        toast.error('Errore nella creazione dell\'udienza: ' + error.message)
+        toast.error('Errore nella modifica dell\'udienza: ' + error.message)
       } else {
-        toast.success('Udienza creata con successo!')
+        toast.success('Udienza modificata con successo!')
         onSuccess()
-        setFormData({
-          title: '',
-          description: '',
-          date: '',
-          time: '',
-          aula_id: '',
-        })
       }
     } catch (error) {
       toast.error('Errore imprevisto')
@@ -200,29 +177,30 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="title">Titolo Udienza</Label>
+        <Label htmlFor="title">Titolo Udienza *</Label>
         <Input
           id="title"
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="es. Udienza preliminare - Causa n. 123/2024"
+          placeholder="Inserisci il titolo dell'udienza"
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Descrizione (opzionale)</Label>
+        <Label htmlFor="description">Note</Label>
         <Textarea
           id="description"
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Note aggiuntive sull'udienza..."
+          placeholder="Aggiungi note o dettagli (opzionale)"
+          rows={3}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="date">Data</Label>
+          <Label htmlFor="date">Data *</Label>
           <Input
             id="date"
             type="date"
@@ -233,7 +211,7 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="time">Ora</Label>
+          <Label htmlFor="time">Orario *</Label>
           <Input
             id="time"
             type="time"
@@ -244,17 +222,15 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
         </div>
       </div>
 
-
       {/* Filtri di selezione aula */}
       <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
         <h3 className="hidden lg:block text-lg font-semibold text-gray-900 mb-4">Selezione Aula</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Filtro Città */}
           <div className="space-y-2">
             <Label htmlFor="city">Circondario</Label>
             <Select value={selectedCity} onValueChange={setSelectedCity}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger>
                 <SelectValue placeholder="Seleziona circondario" />
               </SelectTrigger>
               <SelectContent>
@@ -267,51 +243,57 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
             </Select>
           </div>
 
-          {/* Filtro Tipo Tribunale */}
           <div className="space-y-2">
             <Label htmlFor="type">Settore</Label>
             <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger>
                 <SelectValue placeholder="Seleziona settore" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="penale">Penale</SelectItem>
-                <SelectItem value="civile">Civile</SelectItem>
-                <SelectItem value="amministrativo">Amministrativo</SelectItem>
+                {tribunali
+                  .filter(t => t.circondario === selectedCity)
+                  .map((tribunale) => (
+                    <SelectItem key={tribunale.id} value={tribunale.settore || ''}>
+                      {tribunale.settore}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Filtro Tribunale */}
           <div className="space-y-2">
             <Label htmlFor="tribunale">Autorità Giudiziaria</Label>
             <Select value={selectedTribunale} onValueChange={setSelectedTribunale}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Seleziona autorità giudiziaria" />
+              <SelectTrigger>
+                <SelectValue placeholder="Seleziona autorità" />
               </SelectTrigger>
               <SelectContent>
-                {tribunali.map((tribunale) => (
-                  <SelectItem key={tribunale.id} value={tribunale.id}>
-                    {tribunale.name}
-                  </SelectItem>
-                ))}
+                {tribunali
+                  .filter(t => t.circondario === selectedCity && t.settore === selectedType)
+                  .map((tribunale) => (
+                    <SelectItem key={tribunale.id} value={tribunale.id}>
+                      {tribunale.nome}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Filtro Aula */}
           <div className="space-y-2">
-            <Label htmlFor="aula">Aula</Label>
-            <Select value={selectedAula} onValueChange={setSelectedAula}>
-              <SelectTrigger className="w-full">
+            <Label htmlFor="aula">Aula *</Label>
+            <Select value={selectedAula} onValueChange={(value) => {
+              setSelectedAula(value)
+              setFormData({ ...formData, aula_id: value })
+            }}>
+              <SelectTrigger>
                 <SelectValue placeholder="Seleziona aula" />
               </SelectTrigger>
               <SelectContent>
                 {aule.map((aula) => (
                   <SelectItem key={aula.id} value={aula.id}>
-                    {aula.name}
+                    {aula.nome}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -324,8 +306,8 @@ export function AddUdienzaForm({ onSuccess, onCancel }: AddUdienzaFormProps) {
         <Button type="button" variant="outline" onClick={onCancel}>
           Annulla
         </Button>
-        <Button type="submit" disabled={loading} className="bg-canossa-red hover:bg-canossa-red-dark text-white">
-          {loading ? 'Creazione...' : 'Crea Udienza'}
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Salvando...' : 'Salva Modifiche'}
         </Button>
       </div>
     </form>
