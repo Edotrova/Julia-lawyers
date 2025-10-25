@@ -48,8 +48,8 @@ export function EditUdienzaForm({ udienza, onSuccess, onCancel }: EditUdienzaFor
     fetchTribunali()
     // Imposta i filtri basati sull'aula corrente
     if (udienza.aule) {
-      setSelectedCity(udienza.aule.tribunali.circondario || '')
-      setSelectedType(udienza.aule.tribunali.settore || '')
+      setSelectedCity(udienza.aule.tribunali.city || '')
+      setSelectedType(udienza.aule.tribunali.type || '')
       setSelectedTribunale(udienza.aule.tribunali.id)
     }
   }, [])
@@ -88,12 +88,12 @@ export function EditUdienzaForm({ udienza, onSuccess, onCancel }: EditUdienzaFor
       const { data } = await supabase
         .from('tribunali')
         .select('*')
-        .eq('circondario', selectedCity)
-        .order('nome')
+        .eq('city', selectedCity)
+        .order('name')
 
       if (data) {
         setTribunali(data)
-        const uniqueTypes = [...new Set(data.map(t => t.settore).filter(Boolean))]
+        const uniqueTypes = [...new Set(data.map(t => t.type).filter(Boolean))]
         // setTypes(uniqueTypes) // Non necessario per ora
       }
     } catch (error) {
@@ -251,10 +251,10 @@ export function EditUdienzaForm({ udienza, onSuccess, onCancel }: EditUdienzaFor
               </SelectTrigger>
               <SelectContent>
                 {tribunali
-                  .filter(t => t.circondario === selectedCity)
+                  .filter(t => t.city === selectedCity)
                   .map((tribunale) => (
-                    <SelectItem key={tribunale.id} value={tribunale.settore || ''}>
-                      {tribunale.settore}
+                    <SelectItem key={tribunale.id} value={tribunale.type || ''}>
+                      {tribunale.type}
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -271,10 +271,10 @@ export function EditUdienzaForm({ udienza, onSuccess, onCancel }: EditUdienzaFor
               </SelectTrigger>
               <SelectContent>
                 {tribunali
-                  .filter(t => t.circondario === selectedCity && t.settore === selectedType)
+                  .filter(t => t.city === selectedCity && t.type === selectedType)
                   .map((tribunale) => (
                     <SelectItem key={tribunale.id} value={tribunale.id}>
-                      {tribunale.nome}
+                      {tribunale.name}
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -293,7 +293,7 @@ export function EditUdienzaForm({ udienza, onSuccess, onCancel }: EditUdienzaFor
               <SelectContent>
                 {aule.map((aula) => (
                   <SelectItem key={aula.id} value={aula.id}>
-                    {aula.nome}
+                    {aula.name}
                   </SelectItem>
                 ))}
               </SelectContent>

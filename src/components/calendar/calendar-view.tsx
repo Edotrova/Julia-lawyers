@@ -7,11 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { AddUdienzaForm } from './add-udienza-form'
 import { EditUdienzaForm } from './edit-udienza-form'
 import { format, isToday, isTomorrow, isYesterday } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { Plus, Clock, MapPin, Users } from 'lucide-react'
+import { Plus, Clock, MapPin, Users, MoreHorizontal } from 'lucide-react'
 import type { Database, Aula, Udienza } from '@/lib/types/database'
 import './calendar-override.css'
 
@@ -265,22 +266,24 @@ export function CalendarView() {
                           <Badge className={`${getStatusColor(udienza.status)} text-xs xl:text-sm`}>
                             {getStatusText(udienza.status)}
                           </Badge>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditUdienza(udienza)}
-                            className="text-xs"
-                          >
-                            Modifica
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDeleteUdienza(udienza.id)}
-                            className="text-xs"
-                          >
-                            Elimina
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditUdienza(udienza)}>
+                                Modifica
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteUdienza(udienza.id)}
+                                className="text-red-600"
+                              >
+                                Elimina
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                       
@@ -341,22 +344,24 @@ export function CalendarView() {
                     <Badge className={getStatusColor(udienza.status)}>
                       {getStatusText(udienza.status)}
                     </Badge>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEditUdienza(udienza)}
-                      className="text-xs"
-                    >
-                      Modifica
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDeleteUdienza(udienza.id)}
-                      className="text-xs"
-                    >
-                      Elimina
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEditUdienza(udienza)}>
+                          Modifica
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteUdienza(udienza.id)}
+                          className="text-red-600"
+                        >
+                          Elimina
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               ))}
