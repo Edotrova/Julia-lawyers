@@ -7,7 +7,7 @@
   overflow: hidden !important;
 }
 
-/* Responsive calendar - dynamic structure */
+/* Responsive calendar - percentage-based structure */
 .responsive-calendar {
   width: 100% !important;
   max-width: 100% !important;
@@ -26,49 +26,65 @@
 .responsive-calendar .rdp-day_button {
   width: 100% !important;
   height: 100% !important;
-  min-height: 32px !important;
-  font-size: 12px !important;
-  padding: 2px !important;
+  aspect-ratio: 1 !important;
+  font-size: 2.5vw !important;
+  padding: 0 !important;
+  margin: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
   line-height: 1 !important;
+  box-sizing: border-box !important;
 }
 
-/* Mobile specific adjustments */
+/* Mobile specific adjustments - percentage based */
 @media (max-width: 640px) {
   .responsive-calendar .rdp-day_button {
-    min-height: 28px !important;
-    font-size: 11px !important;
-    padding: 1px !important;
+    font-size: 3vw !important;
+    aspect-ratio: 1 !important;
   }
   
   .responsive-calendar .rdp-caption {
-    font-size: 14px !important;
+    font-size: 4vw !important;
   }
   
   .responsive-calendar .rdp-head_cell {
-    font-size: 10px !important;
-    padding: 2px !important;
+    font-size: 2.5vw !important;
+    padding: 1% !important;
   }
 }
 
 /* Extra small screens */
 @media (max-width: 480px) {
   .responsive-calendar .rdp-day_button {
-    min-height: 24px !important;
-    font-size: 10px !important;
-    padding: 0px !important;
+    font-size: 3.5vw !important;
+    aspect-ratio: 1 !important;
   }
   
   .responsive-calendar .rdp-caption {
-    font-size: 12px !important;
+    font-size: 4.5vw !important;
   }
   
   .responsive-calendar .rdp-head_cell {
-    font-size: 9px !important;
-    padding: 1px !important;
+    font-size: 3vw !important;
+    padding: 0.5% !important;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  .responsive-calendar .rdp-day_button {
+    font-size: 4vw !important;
+    aspect-ratio: 1 !important;
+  }
+  
+  .responsive-calendar .rdp-caption {
+    font-size: 5vw !important;
+  }
+  
+  .responsive-calendar .rdp-head_cell {
+    font-size: 3.5vw !important;
   }
 }
 
