@@ -401,9 +401,29 @@ export function CalendarView() {
                     <div key={udienza.id} className="border rounded-lg p-4 space-y-2">
                       <div className="flex justify-between items-start">
                         <h4 className="font-medium text-gray-900">{udienza.title}</h4>
-                        <Badge className={getStatusColor(udienza.status)}>
-                          {getStatusText(udienza.status)}
-                        </Badge>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={getStatusColor(udienza.status)}>
+                            {getStatusText(udienza.status)}
+                          </Badge>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditUdienza(udienza)}>
+                                Modifica
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteUdienza(udienza.id)}
+                                className="text-red-600"
+                              >
+                                Elimina
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
                       
                       <div className="flex items-center text-sm text-gray-600">
