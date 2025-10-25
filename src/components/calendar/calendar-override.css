@@ -1,16 +1,23 @@
 /* Override CSS per il calendario - sovrascrive le classi Tailwind */
 
-/* Calendar container */
+/* Calendar container - simplified layout */
 .calendar-container {
   width: 100% !important;
   max-width: 100% !important;
+  background: white !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
   overflow: hidden !important;
 }
 
-/* Responsive calendar - percentage-based structure */
+/* Responsive calendar - simplified structure */
 .responsive-calendar {
   width: 100% !important;
   max-width: 100% !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
 }
 
 .responsive-calendar .rdp {
@@ -25,9 +32,8 @@
 
 .responsive-calendar .rdp-day_button {
   width: 100% !important;
-  height: 100% !important;
-  aspect-ratio: 1 !important;
-  font-size: 2.5vw !important;
+  height: 32px !important;
+  font-size: 12px !important;
   padding: 0 !important;
   margin: 0 !important;
   display: flex !important;
@@ -36,55 +42,48 @@
   text-align: center !important;
   line-height: 1 !important;
   box-sizing: border-box !important;
+  border-radius: 4px !important;
 }
 
-/* Mobile specific adjustments - percentage based */
+/* Mobile specific adjustments - simplified */
 @media (max-width: 640px) {
+  .calendar-container {
+    padding: 8px !important;
+  }
+  
   .responsive-calendar .rdp-day_button {
-    font-size: 3vw !important;
-    aspect-ratio: 1 !important;
+    height: 28px !important;
+    font-size: 11px !important;
   }
   
   .responsive-calendar .rdp-caption {
-    font-size: 4vw !important;
+    font-size: 14px !important;
   }
   
   .responsive-calendar .rdp-head_cell {
-    font-size: 2.5vw !important;
-    padding: 1% !important;
+    font-size: 10px !important;
+    padding: 2px !important;
   }
 }
 
 /* Extra small screens */
 @media (max-width: 480px) {
+  .calendar-container {
+    padding: 6px !important;
+  }
+  
   .responsive-calendar .rdp-day_button {
-    font-size: 3.5vw !important;
-    aspect-ratio: 1 !important;
+    height: 24px !important;
+    font-size: 10px !important;
   }
   
   .responsive-calendar .rdp-caption {
-    font-size: 4.5vw !important;
+    font-size: 12px !important;
   }
   
   .responsive-calendar .rdp-head_cell {
-    font-size: 3vw !important;
-    padding: 0.5% !important;
-  }
-}
-
-/* Very small screens */
-@media (max-width: 360px) {
-  .responsive-calendar .rdp-day_button {
-    font-size: 4vw !important;
-    aspect-ratio: 1 !important;
-  }
-  
-  .responsive-calendar .rdp-caption {
-    font-size: 5vw !important;
-  }
-  
-  .responsive-calendar .rdp-head_cell {
-    font-size: 3.5vw !important;
+    font-size: 9px !important;
+    padding: 1px !important;
   }
 }
 

@@ -171,21 +171,19 @@ export function CalendarView() {
         {/* Calendar */}
         <div className="lg:col-span-2">
           <Card className="h-full">
-            <CardContent className="p-2 sm:p-4">
-              <div className="calendar-container">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleCalendarClick}
-                  className="rounded-md border canossa-calendar w-full responsive-calendar"
-                  locale={it}
-                  style={{
-                    '--canossa-calendar-selected': '#9B4A52',
-                    '--canossa-calendar-selected-hover': '#7B2F37'
-                  } as React.CSSProperties}
-                />
-              </div>
-            </CardContent>
+            <div className="calendar-container">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleCalendarClick}
+                className="responsive-calendar"
+                locale={it}
+                style={{
+                  '--canossa-calendar-selected': '#9B4A52',
+                  '--canossa-calendar-selected-hover': '#7B2F37'
+                } as React.CSSProperties}
+              />
+            </div>
           </Card>
         </div>
 
