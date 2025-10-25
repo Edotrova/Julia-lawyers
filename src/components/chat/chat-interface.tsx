@@ -181,59 +181,54 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
     if (!currentUser) return
     
     try {
-      // Carica le ultime chat aule dell'utente
-      const { data: recentChatRooms, error } = await supabase
+      // Prima carica i messaggi
+      const { data: recentMessages, error: messagesError } = await supabase
         .from('messages')
-        .select(`
-          chat_room_id,
-          content,
-          created_at,
-          chat_rooms!inner(
-            aula_id,
-            name
-          )
-        `)
+        .select('chat_room_id, content, created_at')
         .eq('message_type', 'room')
         .not('chat_room_id', 'is', null)
         .order('created_at', { ascending: false })
         .limit(20)
 
-      if (error) throw error
+      if (messagesError) throw messagesError
 
-      console.log('🔍 Chat rooms caricate:', recentChatRooms)
-      console.log('🔍 Numero di chat rooms:', recentChatRooms?.length)
+      if (!recentMessages || recentMessages.length === 0) {
+        setOpenChatRooms([])
+        return
+      }
+
+      // Poi carica le chat rooms
+      const roomIds = [...new Set(recentMessages.map(msg => msg.chat_room_id))]
+      const { data: chatRoomsData, error: roomsError } = await supabase
+        .from('chat_rooms')
+        .select('id, name, aula_id')
+        .in('id', roomIds)
+
+      if (roomsError) throw roomsError
+
+      console.log('🔍 Messaggi:', recentMessages)
+      console.log('🔍 Chat rooms:', chatRoomsData)
 
       // Raggruppa per chat room e prendi l'ultimo messaggio
       const chatRoomMap = new Map()
       
-      recentChatRooms?.forEach((message, index) => {
-        console.log(`🔍 Messaggio ${index}:`, {
-          chat_room_id: message.chat_room_id,
-          content: message.content,
-          chat_rooms: message.chat_rooms
-        })
-        
+      recentMessages.forEach((message) => {
         const roomId = message.chat_room_id
-        const roomData = message.chat_rooms
+        const roomData = chatRoomsData?.find(room => room.id === roomId)
         
         console.log('🔍 Room data:', roomData)
-        console.log('🔍 Room data.name:', (roomData as Database['public']['Tables']['chat_rooms']['Row'][])?.[0]?.name)
+        console.log('🔍 Room name:', roomData?.name)
         
         if (!chatRoomMap.has(roomId)) {
-          // Usa il nome dalla tabella chat_rooms e rimuovi i primi 5 caratteri ("Chat ")
-          const roomName = (roomData as Database['public']['Tables']['chat_rooms']['Row'][])?.[0]?.name || 'Aula'
-          const aulaName = roomName.startsWith('Chat ') ? roomName.substring(5) : roomName
-          
-          console.log('🔍 Room name:', roomName)
-          console.log('🔍 Aula name:', aulaName)
+          const roomName = roomData?.name || 'Aula'
           
           chatRoomMap.set(roomId, {
             roomId: roomId,
             lastMessage: message.content,
             timestamp: format(new Date(message.created_at), 'HH:mm'),
-            city: 'N/A', // Per ora usiamo N/A, potremmo aggiungere logica per estrarre città se necessario
-            tribunale: 'N/A', // Per ora usiamo N/A, potremmo aggiungere logica per estrarre tribunale se necessario
-            aula: aulaName
+            city: 'N/A',
+            tribunale: 'N/A',
+            aula: roomName
           })
         }
       })
@@ -517,9 +512,23 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
           setSelectedRoom(data[0].id)
         }
       } else {
-        // Se non c'è aula selezionata, non mostrare chat rooms
-        setChatRooms([])
-        setSelectedRoom('')
+        // Se non c'è aula selezionata, carica tutte le chat rooms
+        const { data } = await supabase
+          .from('chat_rooms')
+          .select(`
+            *,
+            aule (
+              *,
+              tribunali (*)
+            )
+          `)
+          .order('created_at', { ascending: false })
+
+        setChatRooms(data || [])
+        
+        if (data && data.length > 0) {
+          setSelectedRoom(data[0].id)
+        }
       }
     } catch (error) {
       console.error('Errore nel caricamento delle chat rooms:', error)
@@ -1004,7 +1013,7 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                           // Se non trovata in chatRooms, cerca in openChatRooms
                           const openRoom = openChatRooms.find(room => room.roomId === selectedRoom)
                           if (openRoom?.aula) {
-                            return `Chat ${openRoom.aula}`
+                            return openRoom.aula
                           }
                           return 'Chat Aula'
                         })()}

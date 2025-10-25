@@ -69,26 +69,21 @@ export function DashboardStats({ refreshTrigger }: DashboardStatsProps) {
 
   const fetchStats = async () => {
     try {
-      const savedUser = localStorage.getItem('user')
-      if (!savedUser) return
-      
-      const user = JSON.parse(savedUser)
-      // Debug: Verifica l'utente autenticato da Supabase
+      // Usa sempre Supabase Auth invece di localStorage
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
       
       if (authError) {
         console.error('❌ Errore autenticazione Supabase:', authError)
+        return
       }
       
-      // Debug: Confronta gli ID solo se c'è un mismatch
-      if (authUser && user.id !== authUser.id) {
-        console.log('🔄 Usando ID Supabase Auth invece di localStorage per le query')
+      if (!authUser) {
+        console.log('⚠️ Nessun utente autenticato')
+        return
       }
 
       const today = format(new Date(), 'yyyy-MM-dd')
-
-      // Conta udienze di oggi - usa l'ID di Supabase Auth se disponibile
-      const userId = authUser?.id || user.id
+      const userId = authUser.id
       const { count: udienzeCount } = await supabase
         .from('udienze')
         .select('*', { count: 'exact', head: true })
@@ -105,15 +100,6 @@ export function DashboardStats({ refreshTrigger }: DashboardStatsProps) {
       const startWeekStr = format(startOfWeek, 'yyyy-MM-dd')
       const endWeekStr = format(endOfWeek, 'yyyy-MM-dd')
       
-      // Debug: Mostra solo se c'è un problema
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📅 Calcolo settimana:', {
-          startOfWeek: startWeekStr,
-          endOfWeek: endWeekStr,
-          userId: userId,
-          usingAuthUser: !!authUser
-        })
-      }
       
       const { count: udienzeSettimanaCount, error: weekError } = await supabase
         .from('udienze')
