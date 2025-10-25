@@ -1,16 +1,74 @@
 /* Override CSS per il calendario - sovrascrive le classi Tailwind */
 
-/* Responsive calendar - simplified approach */
-.responsive-calendar {
+/* Calendar container */
+.calendar-container {
   width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
 }
 
-/* Mobile specific adjustments - less aggressive */
+/* Responsive calendar - dynamic structure */
+.responsive-calendar {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.responsive-calendar .rdp {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.responsive-calendar .rdp-table {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.responsive-calendar .rdp-day_button {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 32px !important;
+  font-size: 12px !important;
+  padding: 2px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
+}
+
+/* Mobile specific adjustments */
 @media (max-width: 640px) {
   .responsive-calendar .rdp-day_button {
-    min-height: 36px !important;
+    min-height: 28px !important;
+    font-size: 11px !important;
+    padding: 1px !important;
+  }
+  
+  .responsive-calendar .rdp-caption {
     font-size: 14px !important;
-    padding: 6px !important;
+  }
+  
+  .responsive-calendar .rdp-head_cell {
+    font-size: 10px !important;
+    padding: 2px !important;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .responsive-calendar .rdp-day_button {
+    min-height: 24px !important;
+    font-size: 10px !important;
+    padding: 0px !important;
+  }
+  
+  .responsive-calendar .rdp-caption {
+    font-size: 12px !important;
+  }
+  
+  .responsive-calendar .rdp-head_cell {
+    font-size: 9px !important;
+    padding: 1px !important;
   }
 }
 
