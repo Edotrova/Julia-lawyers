@@ -32,8 +32,9 @@
 
 .responsive-calendar .rdp-day_button {
   width: 100% !important;
-  height: 32px !important;
-  font-size: 12px !important;
+  height: 36px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
   padding: 0 !important;
   margin: 0 !important;
   display: flex !important;
@@ -42,18 +43,39 @@
   text-align: center !important;
   line-height: 1 !important;
   box-sizing: border-box !important;
-  border-radius: 4px !important;
+  border-radius: 6px !important;
 }
 
 /* Mobile specific adjustments - simplified */
 @media (max-width: 640px) {
+  .calendar-container {
+    padding: 10px !important;
+  }
+  
+  .responsive-calendar .rdp-day_button {
+    height: 32px !important;
+    font-size: 13px !important;
+  }
+  
+  .responsive-calendar .rdp-caption {
+    font-size: 16px !important;
+  }
+  
+  .responsive-calendar .rdp-head_cell {
+    font-size: 12px !important;
+    padding: 4px !important;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
   .calendar-container {
     padding: 8px !important;
   }
   
   .responsive-calendar .rdp-day_button {
     height: 28px !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
   }
   
   .responsive-calendar .rdp-caption {
@@ -61,37 +83,37 @@
   }
   
   .responsive-calendar .rdp-head_cell {
-    font-size: 10px !important;
-    padding: 2px !important;
+    font-size: 11px !important;
+    padding: 3px !important;
   }
 }
 
-/* Extra small screens */
-@media (max-width: 480px) {
-  .calendar-container {
-    padding: 6px !important;
-  }
-  
-  .responsive-calendar .rdp-day_button {
-    height: 24px !important;
-    font-size: 10px !important;
-  }
-  
-  .responsive-calendar .rdp-caption {
-    font-size: 12px !important;
-  }
-  
-  .responsive-calendar .rdp-head_cell {
-    font-size: 9px !important;
-    padding: 1px !important;
-  }
-}
-
-/* Rimuovi tutti i bordi neri del calendario */
+/* Rimuovi tutti i bordi e linee del calendario */
 .rdp-day_button {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+}
+
+/* Rimuovi linee interne della tabella */
+.rdp-table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.rdp-table td {
+  border: none !important;
+  padding: 0 !important;
+}
+
+.rdp-table tr {
+  border: none !important;
+}
+
+/* Rimuovi linee tra le celle */
+.rdp-day_button + .rdp-day_button {
+  border-left: none !important;
+  border-top: none !important;
 }
 
 .rdp-day_button:focus {
