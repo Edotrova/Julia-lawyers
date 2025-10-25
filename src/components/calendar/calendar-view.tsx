@@ -171,12 +171,12 @@ export function CalendarView() {
         {/* Calendar */}
         <div className="lg:col-span-2">
           <Card className="h-full">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
               <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={handleCalendarClick}
-                className="rounded-md border canossa-calendar w-full h-full"
+                className="rounded-md border canossa-calendar w-full h-full responsive-calendar"
                 locale={it}
                 style={{
                   '--canossa-calendar-selected': '#9B4A52',
