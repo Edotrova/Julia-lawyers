@@ -10,6 +10,7 @@ import { ProfileSearch } from '@/components/dashboard/profile-search'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import { useRefreshStats } from '@/hooks/use-refresh-stats'
+import { useAllUdienze } from '@/components/providers/all-udienze-provider'
 import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/lib/types/database'
 
@@ -20,6 +21,7 @@ function DashboardPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { refreshTrigger, refreshStats } = useRefreshStats()
+  const { openAllUdienze } = useAllUdienze()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('calendar')
@@ -86,6 +88,24 @@ function DashboardPageContent() {
     return null
   }
 
+  const handleOggiClick = () => {
+    const today = new Date().toISOString().split('T')[0]
+    openAllUdienze(today)
+  }
+
+  const handleSettimanaClick = () => {
+    const today = new Date()
+    const startOfWeek = new Date(today)
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1) // Lunedì
+    const startWeekStr = startOfWeek.toISOString().split('T')[0]
+    openAllUdienze(startWeekStr)
+  }
+
+  const handleMessaggiClick = () => {
+    // Naviga alla pagina chat
+    router.push('/dashboard/chat')
+  }
+
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab}>
       <div className="space-y-4 md:space-y-6">
@@ -109,7 +129,12 @@ function DashboardPageContent() {
           </div>
         </div>
 
-        <DashboardStats refreshTrigger={refreshTrigger} />
+        <DashboardStats 
+          refreshTrigger={refreshTrigger}
+          onOggiClick={handleOggiClick}
+          onSettimanaClick={handleSettimanaClick}
+          onMessaggiClick={handleMessaggiClick}
+        />
 
         <div className="space-y-6">
           {/* Tab Navigation - nascosto su mobile */}

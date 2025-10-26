@@ -6,12 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, MessageSquare } from 'lucide-react'
 import { format } from 'date-fns'
 import { useNotifications } from '@/hooks/use-notifications'
+import { useAllUdienze } from '@/components/providers/all-udienze-provider'
 
 interface DashboardStatsProps {
   refreshTrigger?: number
+  onOggiClick?: () => void
+  onSettimanaClick?: () => void
+  onMessaggiClick?: () => void
 }
 
-export function DashboardStats({ refreshTrigger }: DashboardStatsProps) {
+export function DashboardStats({ refreshTrigger, onOggiClick, onSettimanaClick, onMessaggiClick }: DashboardStatsProps) {
   const [stats, setStats] = useState({
     udienzeOggi: 0,
     udienzeSettimana: 0,
@@ -20,6 +24,7 @@ export function DashboardStats({ refreshTrigger }: DashboardStatsProps) {
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
   const { unreadCount } = useNotifications()
+  const { openAllUdienze } = useAllUdienze()
 
   useEffect(() => {
     fetchStats()
@@ -146,7 +151,14 @@ export function DashboardStats({ refreshTrigger }: DashboardStatsProps) {
 
   return (
     <div className="grid grid-cols-3 gap-2 md:gap-6">
-      <Card className="hover:shadow-md transition-shadow duration-200 border-l-4" style={{ borderLeftColor: 'var(--canossa-red)' }}>
+      <Card 
+        className="hover:shadow-md transition-shadow duration-200 border-l-4 cursor-pointer" 
+        style={{ borderLeftColor: 'var(--canossa-red)' }}
+        onClick={onOggiClick || (() => {
+          const today = new Date().toISOString().split('T')[0]
+          openAllUdienze(today)
+        })}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2 px-2 md:px-4 pt-2 md:pt-4">
           <CardTitle className="text-xs md:text-sm font-medium text-gray-700">Oggi</CardTitle>
           <Calendar className="h-3 w-3 md:h-4 md:w-4" style={{ color: 'var(--canossa-red)' }} />
@@ -159,7 +171,17 @@ export function DashboardStats({ refreshTrigger }: DashboardStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-md transition-shadow duration-200 border-l-4" style={{ borderLeftColor: 'var(--canossa-red)' }}>
+      <Card 
+        className="hover:shadow-md transition-shadow duration-200 border-l-4 cursor-pointer" 
+        style={{ borderLeftColor: 'var(--canossa-red)' }}
+        onClick={onSettimanaClick || (() => {
+          const today = new Date()
+          const startOfWeek = new Date(today)
+          startOfWeek.setDate(today.getDate() - today.getDay() + 1) // Lunedì
+          const startWeekStr = startOfWeek.toISOString().split('T')[0]
+          openAllUdienze(startWeekStr)
+        })}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2 px-2 md:px-4 pt-2 md:pt-4">
           <CardTitle className="text-xs md:text-sm font-medium text-gray-700">Settimana</CardTitle>
           <Calendar className="h-3 w-3 md:h-4 md:w-4" style={{ color: 'var(--canossa-red)' }} />
@@ -172,7 +194,11 @@ export function DashboardStats({ refreshTrigger }: DashboardStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-md transition-shadow duration-200 border-l-4" style={{ borderLeftColor: 'var(--canossa-red)' }}>
+      <Card 
+        className="hover:shadow-md transition-shadow duration-200 border-l-4 cursor-pointer" 
+        style={{ borderLeftColor: 'var(--canossa-red)' }}
+        onClick={onMessaggiClick}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 md:pb-2 px-2 md:px-4 pt-2 md:pt-4">
           <CardTitle className="text-xs md:text-sm font-medium text-gray-700">Messaggi</CardTitle>
           <MessageSquare className="h-3 w-3 md:h-4 md:w-4" style={{ color: 'var(--canossa-red)' }} />

@@ -13,12 +13,19 @@ import { EditUdienzaForm } from './edit-udienza-form'
 import { format, isToday, isTomorrow, isYesterday } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { Plus, Clock, MapPin, Users, MoreHorizontal } from 'lucide-react'
+import { useAllUdienze } from '@/components/providers/all-udienze-provider'
 import type { Database, Aula, Udienza } from '@/lib/types/database'
 import './calendar-override.css'
 
 type Tribunale = Database['public']['Tables']['tribunali']['Row']
 
-export function CalendarView() {
+interface CalendarViewProps {
+  onOggiClick?: () => void
+  onSettimanaClick?: () => void
+  onMessaggiClick?: () => void
+}
+
+export function CalendarView({ onOggiClick, onSettimanaClick, onMessaggiClick }: CalendarViewProps) {
   const [udienze, setUdienze] = useState<Udienza[]>([])
   const [aule, setAule] = useState<Aula[]>([])
   const [tribunali, setTribunali] = useState<Tribunale[]>([])
@@ -30,6 +37,7 @@ export function CalendarView() {
   const [showEditForm, setShowEditForm] = useState(false)
   const [selectedUdienza, setSelectedUdienza] = useState<Udienza | null>(null)
   const supabase = createClient()
+  const { openAllUdienze } = useAllUdienze()
 
   useEffect(() => {
     fetchData()
@@ -138,6 +146,36 @@ export function CalendarView() {
       }
     } catch (error) {
       console.error('Errore imprevisto:', error)
+    }
+  }
+
+  const handleOggiClick = () => {
+    if (onOggiClick) {
+      onOggiClick()
+    } else {
+      const today = new Date().toISOString().split('T')[0]
+      openAllUdienze(today)
+    }
+  }
+
+  const handleSettimanaClick = () => {
+    if (onSettimanaClick) {
+      onSettimanaClick()
+    } else {
+      const today = new Date()
+      const startOfWeek = new Date(today)
+      startOfWeek.setDate(today.getDate() - today.getDay() + 1) // Lunedì
+      const startWeekStr = startOfWeek.toISOString().split('T')[0]
+      openAllUdienze(startWeekStr)
+    }
+  }
+
+  const handleMessaggiClick = () => {
+    if (onMessaggiClick) {
+      onMessaggiClick()
+    } else {
+      // Naviga alla pagina chat
+      window.location.href = '/dashboard/chat'
     }
   }
 
@@ -315,7 +353,21 @@ export function CalendarView() {
       {/* Prossime udienze */}
       <Card>
         <CardHeader>
-          <CardTitle>Prossime Udienze</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Prossime Udienze</CardTitle>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => openAllUdienze()}>
+                  Vedi tutte
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

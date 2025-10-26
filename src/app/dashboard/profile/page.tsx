@@ -10,6 +10,7 @@ import { ProfileManagement } from '@/components/profile/profile-management'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import { useRefreshStats } from '@/hooks/use-refresh-stats'
+import { useAllUdienze } from '@/components/providers/all-udienze-provider'
 import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/lib/types/database'
 
@@ -20,6 +21,7 @@ function ProfilePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { refreshTrigger, refreshStats } = useRefreshStats()
+  const { openAllUdienze } = useAllUdienze()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('profile')
@@ -86,12 +88,34 @@ function ProfilePageContent() {
     return null
   }
 
+  const handleOggiClick = () => {
+    const today = new Date().toISOString().split('T')[0]
+    openAllUdienze(today)
+  }
+
+  const handleSettimanaClick = () => {
+    const today = new Date()
+    const startOfWeek = new Date(today)
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1) // Lunedì
+    const startWeekStr = startOfWeek.toISOString().split('T')[0]
+    openAllUdienze(startWeekStr)
+  }
+
+  const handleMessaggiClick = () => {
+    router.push('/dashboard/chat')
+  }
+
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={setActiveTab}>
       <div className="space-y-6">
         {/* Stats per mobile - nascoste su desktop */}
         <div className="lg:hidden">
-          <DashboardStats refreshTrigger={refreshTrigger} />
+          <DashboardStats 
+            refreshTrigger={refreshTrigger}
+            onOggiClick={handleOggiClick}
+            onSettimanaClick={handleSettimanaClick}
+            onMessaggiClick={handleMessaggiClick}
+          />
         </div>
           {/* Tab Navigation - nascosto su mobile e su pagine separate */}
           <div className="hidden">
