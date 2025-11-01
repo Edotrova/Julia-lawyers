@@ -46,7 +46,7 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
   const [currentUser, setCurrentUser] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [openChats, setOpenChats] = useState<{userId: string, lastMessage: string, timestamp: string, profile?: Database['public']['Tables']['profiles']['Row']}[]>([])
-  const [openChatRooms, setOpenChatRooms] = useState<{roomId: string, lastMessage: string, timestamp: string, city: string, tribunale: string, aula: string}[]>([])
+  const [openChatRooms, setOpenChatRooms] = useState<{roomId: string, lastMessage: string, timestamp: string, city: string, tribunale: string, aula: string, aulaId: string, tribunaleId: string, type: string}[]>([])
   
   // Filtri per chat delle aule
   const [tribunali, setTribunali] = useState<Database['public']['Tables']['tribunali']['Row'][]>([])
@@ -181,11 +181,12 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
     if (!currentUser) return
     
     try {
-      // Prima carica i messaggi
+      // Prima carica i messaggi SOLO dell'utente corrente
       const { data: recentMessages, error: messagesError } = await supabase
         .from('messages')
         .select('chat_room_id, content, created_at')
         .eq('message_type', 'room')
+        .eq('sender_id', currentUser)
         .not('chat_room_id', 'is', null)
         .order('created_at', { ascending: false })
         .limit(20)
@@ -197,41 +198,77 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
         return
       }
 
-      // Poi carica le chat rooms
+      // Ottieni le chat rooms uniche dove l'utente ha messaggi
       const roomIds = [...new Set(recentMessages.map(msg => msg.chat_room_id))]
+      
+      // Poi carica le chat rooms con tutte le informazioni necessarie
       const { data: chatRoomsData, error: roomsError } = await supabase
         .from('chat_rooms')
-        .select('id, name, aula_id')
+        .select(`
+          id, 
+          name, 
+          aula_id,
+          aule (
+            id,
+            name,
+            tribunale_id,
+            tribunali (
+              id,
+              name,
+              city,
+              type
+            )
+          )
+        `)
         .in('id', roomIds)
 
       if (roomsError) throw roomsError
 
-      console.log('🔍 Messaggi:', recentMessages)
-      console.log('🔍 Chat rooms:', chatRoomsData)
-
-      // Raggruppa per chat room e prendi l'ultimo messaggio
+      // Per ogni chat room, recupera l'ultimo messaggio in assoluto (non solo dell'utente)
       const chatRoomMap = new Map()
       
-      recentMessages.forEach((message) => {
-        const roomId = message.chat_room_id
-        const roomData = chatRoomsData?.find(room => room.id === roomId)
+      for (const roomId of roomIds) {
+        const roomData = chatRoomsData?.find((room: any) => room.id === roomId)
+        if (!roomData || !roomData.aule) continue
         
-        console.log('🔍 Room data:', roomData)
-        console.log('🔍 Room name:', roomData?.name)
+        // Gestisce sia il caso di array che di oggetto singolo per aule
+        const aulaDataArray = Array.isArray(roomData.aule) ? roomData.aule : [roomData.aule]
+        if (aulaDataArray.length === 0) continue
         
-        if (!chatRoomMap.has(roomId)) {
-          const roomName = roomData?.name || 'Aula'
-          
+        const aulaData = aulaDataArray[0]
+        // Gestisce sia il caso di array che di oggetto singolo per tribunali
+        const tribunaleDataArray = aulaData.tribunali 
+          ? (Array.isArray(aulaData.tribunali) ? aulaData.tribunali : [aulaData.tribunali])
+          : []
+        if (tribunaleDataArray.length === 0) continue
+        
+        const tribunaleData = tribunaleDataArray[0]
+        const roomName = roomData.name || aulaData.name || 'Aula'
+        
+        // Recupera l'ultimo messaggio della chat (di chiunque)
+        const { data: lastMessage } = await supabase
+          .from('messages')
+          .select('content, created_at')
+          .eq('chat_room_id', roomId)
+          .eq('message_type', 'room')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+        
+        if (lastMessage && tribunaleData) {
           chatRoomMap.set(roomId, {
             roomId: roomId,
-            lastMessage: message.content,
-            timestamp: format(new Date(message.created_at), 'HH:mm'),
-            city: 'N/A',
-            tribunale: 'N/A',
-            aula: roomName
+            lastMessage: lastMessage.content,
+            timestamp: format(new Date(lastMessage.created_at), 'HH:mm'),
+            city: tribunaleData.city || 'N/A',
+            tribunale: tribunaleData.name || 'N/A',
+            aula: roomName,
+            aulaId: aulaData.id,
+            tribunaleId: tribunaleData.id,
+            type: tribunaleData.type || ''
           })
         }
-      })
+      }
       
       console.log('🔍 Chat room map finale:', Array.from(chatRoomMap.values()))
 
@@ -247,6 +284,7 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
     }
   }, [currentUser])
 
+  // Aggiorna i filtri quando l'utente cambia manualmente i dropdown
   useEffect(() => {
     if (selectedCity) {
       fetchTribunaliByCity()
@@ -258,9 +296,6 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
       fetchAuleByTribunale()
     }
   }, [selectedTribunale])
-
-  // Rimosso l'useEffect che apriva automaticamente la chat quando si selezionava l'aula
-  // Ora l'utente deve cliccare esplicitamente su 'Vai alla chat'
 
   // Funzione per validare che tutti i parametri siano selezionati
   const areAllParametersSelected = () => {
@@ -415,16 +450,13 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
 
       setTribunali(data || [])
       
-      // Reset dei valori dipendenti quando si cambia città
-      setSelectedType('')
-      setSelectedTribunale('')
-      setSelectedAula('')
-      setAule([])
-      setChatRooms([])
-      setSelectedRoom('')
-      
-      // Non auto-selezionare più i valori per evitare apertura automatica
-      // L'utente deve selezionare manualmente tutti i parametri
+      // Reset dei valori dipendenti solo se non c'è una chat aperta
+      if (!selectedRoom) {
+        setSelectedType('')
+        setSelectedTribunale('')
+        setSelectedAula('')
+        setAule([])
+      }
     } catch (error) {
       console.error('Errore nel caricamento dei tribunali per città:', error)
     }
@@ -445,13 +477,10 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
 
       setAule(data || [])
       
-      // Reset dei valori dipendenti quando si cambia tribunale
-      setSelectedAula('')
-      setChatRooms([])
-      setSelectedRoom('')
-      
-      // Non auto-selezionare più l'aula per evitare apertura automatica
-      // L'utente deve selezionare manualmente l'aula
+      // Reset dei valori dipendenti solo se non c'è una chat aperta
+      if (!selectedRoom) {
+        setSelectedAula('')
+      }
     } catch (error) {
       console.error('Errore nel caricamento delle aule:', error)
     }
@@ -474,13 +503,6 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
         .eq('aula_id', selectedAula)
 
       setChatRooms(data || [])
-      
-      if (data && data.length > 0) {
-        setSelectedRoom(data[0].id)
-      } else {
-        // Se non ci sono chat rooms, mostra un messaggio informativo
-        console.log('📝 Nessuna chat room trovata per questa aula')
-      }
     } catch (error) {
       console.error('Errore nel caricamento delle chat rooms:', error)
     } finally {
@@ -507,10 +529,6 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
           .order('created_at', { ascending: false })
 
         setChatRooms(data || [])
-        
-        if (data && data.length > 0) {
-          setSelectedRoom(data[0].id)
-        }
       } else {
         // Se non c'è aula selezionata, carica tutte le chat rooms
         const { data } = await supabase
@@ -525,10 +543,6 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
           .order('created_at', { ascending: false })
 
         setChatRooms(data || [])
-        
-        if (data && data.length > 0) {
-          setSelectedRoom(data[0].id)
-        }
       }
     } catch (error) {
       console.error('Errore nel caricamento delle chat rooms:', error)
@@ -803,6 +817,32 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
     return message.sender_id === currentUser
   }
 
+  // Funzione per formattare il timestamp: mostra data + orario se è il primo messaggio del giorno
+  const formatMessageTimestamp = (message: Message, index: number) => {
+    const messageDate = new Date(message.created_at)
+    const messageDateOnly = format(messageDate, 'yyyy-MM-dd')
+    
+    // Se è il primo messaggio, mostra sempre la data
+    if (index === 0) {
+      return format(messageDate, 'dd/MM/yyyy HH:mm', { locale: it })
+    }
+    
+    // Controlla se il messaggio precedente è dello stesso giorno
+    const previousMessage = messages[index - 1]
+    if (previousMessage) {
+      const previousDate = new Date(previousMessage.created_at)
+      const previousDateOnly = format(previousDate, 'yyyy-MM-dd')
+      
+      // Se il giorno è diverso, mostra la data
+      if (messageDateOnly !== previousDateOnly) {
+        return format(messageDate, 'dd/MM/yyyy HH:mm', { locale: it })
+      }
+    }
+    
+    // Altrimenti mostra solo l'orario
+    return format(messageDate, 'HH:mm', { locale: it })
+  }
+
   if (loading && chatRooms.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -931,18 +971,97 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                     </div>
                   </div>
 
-                  {/* Chat aule aperte - direttamente sotto */}
+                  {/* Pulsante vai alla chat - subito dopo i parametri */}
+                  {areAllParametersSelected() && (
+                    <div className="pt-2">
+                      <Button
+                        onClick={goToAulaChat}
+                        className="w-full click-red-shadow"
+                        size="sm"
+                        disabled={loading}
+                      >
+                        {loading ? 'Caricamento...' : 'Vai alla Chat'}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Chat aule aperte - sotto il pulsante */}
                   {openChatRooms.length > 0 && (
                     <div className="space-y-2">
                       {openChatRooms.map((chat) => (
                         <div 
                           key={chat.roomId}
                           className={`p-4 rounded-lg cursor-pointer transition-colors border ${
-                            selectedRoom === chat.roomId 
+                            selectedAula === chat.aulaId 
                               ? 'bg-canossa-subtle-bg border-canossa-red' 
                               : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
                           }`}
-                          onClick={() => setSelectedRoom(chat.roomId)}
+                          onClick={async () => {
+                            // Apre direttamente la conversazione della chat
+                            try {
+                              setLoading(true)
+                              
+                              // Carica le chat rooms per l'aula di questa chat
+                              const { data } = await supabase
+                                .from('chat_rooms')
+                                .select(`
+                                  *,
+                                  aule (
+                                    *,
+                                    tribunali (*)
+                                  )
+                                `)
+                                .eq('aula_id', chat.aulaId)
+
+                              if (data && data.length > 0) {
+                                // Trova la chat room corrispondente all'ID della chat
+                                const matchingRoom = data.find(room => room.id === chat.roomId)
+                                if (matchingRoom) {
+                                  // Imposta direttamente la chat room
+                                  setChatRooms(data)
+                                  setSelectedRoom(chat.roomId)
+                                  
+                                  // Aggiorna i parametri SOLO per i filtri (senza triggerare effetti)
+                                  if (chat.city && !cities.includes(chat.city)) {
+                                    setCities([...cities, chat.city].sort())
+                                  }
+                                  
+                                  // Carica tribunali e aule direttamente senza useEffect
+                                  if (chat.city) {
+                                    const { data: tribunaliData } = await supabase
+                                      .from('tribunali')
+                                      .select('*')
+                                      .eq('city', chat.city)
+                                      .order('type')
+                                    setTribunali(tribunaliData || [])
+                                  }
+                                  
+                                  if (chat.tribunaleId) {
+                                    const { data: auleData } = await supabase
+                                      .from('aule')
+                                      .select(`
+                                        *,
+                                        tribunali (*)
+                                      `)
+                                      .eq('tribunale_id', chat.tribunaleId)
+                                      .order('name')
+                                    setAule(auleData || [])
+                                  }
+                                  
+                                  // Imposta i parametri DOPO aver caricato tutto (senza triggerare reset)
+                                  setSelectedCity(chat.city)
+                                  setSelectedType(chat.type)
+                                  setSelectedTribunale(chat.tribunaleId)
+                                  setSelectedAula(chat.aulaId)
+                                }
+                              }
+                            } catch (error) {
+                              console.error('Errore nell\'apertura della chat:', error)
+                              toast.error('Errore nell\'apertura della chat')
+                            } finally {
+                              setLoading(false)
+                            }
+                          }}
                         >
                           <div className="flex items-center space-x-3">
                             <Avatar className="h-12 w-12 flex-shrink-0">
@@ -970,28 +1089,14 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                       ))}
                     </div>
                   )}
-
-                  {/* Pulsante vai alla chat */}
-                  {areAllParametersSelected() && (
-                    <div className="pt-2">
-                      <Button
-                        onClick={goToAulaChat}
-                        className="w-full click-red-shadow"
-                        size="sm"
-                        disabled={loading}
-                      >
-                        {loading ? 'Caricamento...' : 'Vai alla Chat'}
-                      </Button>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </div>
           ) : (
             /* Chat aule selezionata - solo chat con pulsante indietro */
             <div className="w-full">
-              <Card>
-                <CardHeader className="pb-3">
+              <Card className="flex flex-col max-h-[calc(100vh-280px)] lg:max-h-[600px]">
+                <CardHeader className="pb-3 flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <Button
@@ -1022,10 +1127,10 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                   </div>
                 </CardHeader>
                 
-                <CardContent className="flex-1 flex flex-col p-0">
-                  {/* Messaggi */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {messages.map((message) => (
+                <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden">
+                  {/* Messaggi - area scrollabile */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+                    {messages.map((message, index) => (
                       <div
                         key={message.id}
                         className={`flex ${isMyMessage(message) ? 'justify-end' : 'justify-start'}`}
@@ -1052,7 +1157,7 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                           <p className={`text-xs mt-1 ${
                             isMyMessage(message) ? 'text-blue-100' : 'text-gray-500'
                           }`}>
-                            {format(new Date(message.created_at), 'HH:mm')}
+                            {formatMessageTimestamp(message, index)}
                           </p>
                         </div>
                       </div>
@@ -1060,8 +1165,8 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                     <div ref={messagesEndRef} />
                   </div>
 
-                  {/* Input messaggio */}
-                  <div className="p-4 border-t">
+                  {/* Input messaggio - fisso dentro il Card */}
+                  <div className="bg-white border-t p-4 flex-shrink-0">
                     <div className="flex space-x-2">
                       <Input
                         placeholder="Scrivi un messaggio..."
@@ -1188,8 +1293,8 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
           ) : (
             /* Chat selezionata - solo chat con pulsante indietro */
             <div className="w-full">
-                <Card className="h-[600px] flex flex-col">
-                  <CardHeader className="pb-3">
+                <Card className="flex flex-col max-h-[calc(100vh-280px)] lg:max-h-[600px]">
+                  <CardHeader className="pb-3 flex-shrink-0">
                     <div className="flex items-center space-x-3">
                       <Button 
                         variant="ghost" 
@@ -1210,10 +1315,10 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="flex-1 flex flex-col p-0">
-                    {/* Messaggi */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                      {messages.map((message) => (
+                  <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden">
+                    {/* Messaggi - area scrollabile */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+                      {messages.map((message, index) => (
                         <div
                           key={message.id}
                           className={`flex ${isMyMessage(message) ? 'justify-end' : 'justify-start'}`}
@@ -1229,7 +1334,7 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                             <p className={`text-xs mt-1 ${
                               isMyMessage(message) ? 'text-blue-100' : 'text-gray-500'
                             }`}>
-                              {format(new Date(message.created_at), 'HH:mm')}
+                              {formatMessageTimestamp(message, index)}
                             </p>
                           </div>
                         </div>
@@ -1237,8 +1342,8 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                       <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Input messaggio */}
-                    <div className="p-4 border-t">
+                    {/* Input messaggio - fisso dentro il Card */}
+                    <div className="bg-white border-t p-4 flex-shrink-0">
                       <div className="flex space-x-2">
                         <Input
                           placeholder="Scrivi un messaggio..."

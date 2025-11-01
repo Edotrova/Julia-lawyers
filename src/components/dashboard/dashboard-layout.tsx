@@ -84,6 +84,14 @@ export function DashboardLayout({ children, activeTab, onTabChange }: DashboardL
   const handleMobileNavigation = (tab: string) => {
     const currentPath = pathname
     
+    // Il tab 'profile' naviga sempre a /dashboard/profile (non c'è tab profile nella dashboard principale)
+    if (tab === 'profile') {
+      if (currentPath !== '/dashboard/profile') {
+        router.push('/dashboard/profile')
+      }
+      return
+    }
+    
     // Se siamo nella dashboard principale, usa il sistema di tab interno
     if (currentPath === '/dashboard' && onTabChange) {
       onTabChange(tab)
@@ -100,10 +108,6 @@ export function DashboardLayout({ children, activeTab, onTabChange }: DashboardL
       } else if (tab === 'messages') {
         if (currentPath !== '/dashboard/chat') {
           router.push('/dashboard/chat')
-        }
-      } else if (tab === 'profile') {
-        if (currentPath !== '/dashboard/profile') {
-          router.push('/dashboard/profile')
         }
       }
     }

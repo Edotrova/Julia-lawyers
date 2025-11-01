@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
-import { User, Mail, Phone, Scale, CheckCircle, XCircle, Edit, Save, X, Camera, Upload, X as XIcon } from 'lucide-react'
+import { User, Mail, Phone, Scale, CheckCircle, XCircle, Edit, Save, X } from 'lucide-react'
 import type { Database } from '@/lib/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -30,8 +30,6 @@ export function ProfileManagement() {
     avatar_url: '',
   })
   const [newSpecialization, setNewSpecialization] = useState('')
-  const [uploadingImage, setUploadingImage] = useState(false)
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -186,96 +184,6 @@ export function ProfileManagement() {
       })
     }
     setEditing(false)
-    setPreviewImage(null)
-  }
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    // Validazione file
-    if (file.size > 5 * 1024 * 1024) { // 5MB
-      toast.error('L\'immagine deve essere inferiore a 5MB')
-      return
-    }
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Seleziona un file immagine valido')
-      return
-    }
-
-    setUploadingImage(true)
-
-    try {
-      // Crea preview
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setPreviewImage(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
-
-      // Upload a Supabase Storage
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file)
-
-      if (uploadError) {
-        throw uploadError
-      }
-
-      // Ottieni URL pubblico
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath)
-
-      // Aggiorna il profilo
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: data.publicUrl })
-        .eq('user_id', user.id)
-
-      if (updateError) {
-        throw updateError
-      }
-
-      toast.success('Foto profilo aggiornata con successo!')
-      fetchProfile()
-    } catch (error) {
-      console.error('Errore upload immagine:', error)
-      toast.error('Errore nel caricamento dell\'immagine')
-    } finally {
-      setUploadingImage(false)
-    }
-  }
-
-  const removeImage = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({ avatar_url: null })
-        .eq('user_id', user.id)
-
-      if (error) {
-        throw error
-      }
-
-      setPreviewImage(null)
-      toast.success('Foto profilo rimossa')
-      fetchProfile()
-    } catch (error) {
-      console.error('Errore rimozione immagine:', error)
-      toast.error('Errore nella rimozione dell\'immagine')
-    }
   }
 
   const addSpecialization = () => {
@@ -486,13 +394,13 @@ export function ProfileManagement() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
-                {/* Foto Profilo Moderna */}
+                {/* Foto Profilo */}
                 <div className="flex flex-col items-center space-y-3">
-                  <div className="relative group">
+                  <div className="relative">
                     <div className="w-32 h-32 rounded-full border-4 overflow-hidden flex items-center justify-center" style={{ borderColor: 'var(--canossa-red)', backgroundColor: 'var(--canossa-subtle-bg)' }}>
-                      {previewImage || profile.avatar_url ? (
+                      {profile.avatar_url ? (
                         <img 
-                          src={previewImage || profile.avatar_url || ''} 
+                          src={profile.avatar_url} 
                           alt="Foto profilo" 
                           className="w-full h-full object-cover"
                         />
@@ -504,48 +412,6 @@ export function ProfileManagement() {
                         </div>
                       )}
                     </div>
-                    
-                    {/* Overlay con pulsanti */}
-                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center space-x-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="avatar-upload"
-                        disabled={uploadingImage}
-                      />
-                      <label
-                        htmlFor="avatar-upload"
-                        className="cursor-pointer bg-white text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-colors"
-                        title="Carica foto"
-                      >
-                        {uploadingImage ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                        ) : (
-                          <Upload className="h-4 w-4" />
-                        )}
-                      </label>
-                      
-                      {(previewImage || profile.avatar_url) && (
-                        <button
-                          onClick={removeImage}
-                          className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
-                          title="Rimuovi foto"
-                        >
-                          <XIcon className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="text-center">
-                    <label
-                      htmlFor="avatar-upload"
-                      className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer underline"
-                    >
-                      {uploadingImage ? 'Caricamento...' : 'Carica immagine'}
-                    </label>
                   </div>
                 </div>
 

@@ -845,7 +845,8 @@ export function AulaCalendarView({}: AulaCalendarViewProps = {}) {
                     <MapPin className="h-4 w-4 mr-2 text-gray-500" />
                     <span>{selectedProfile.aule?.name}</span>
                   </div>
-                  {selectedProfile.description && (
+                  {/* Mostra le note solo se l'udienza appartiene all'utente corrente */}
+                  {selectedProfile.description && currentUser && selectedProfile.user_id === currentUser && (
                     <div className="pt-2 border-t border-gray-200">
                       <div className="text-xs text-gray-600">
                         <strong>Note:</strong> {selectedProfile.description}
