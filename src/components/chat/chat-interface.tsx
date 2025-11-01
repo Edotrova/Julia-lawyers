@@ -228,7 +228,7 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
       const chatRoomMap = new Map()
       
       for (const roomId of roomIds) {
-        const roomData = chatRoomsData?.find((room: any) => room.id === roomId)
+        const roomData = chatRoomsData?.find((room) => room.id === roomId)
         if (!roomData || !roomData.aule) continue
         
         // Gestisce sia il caso di array che di oggetto singolo per aule
