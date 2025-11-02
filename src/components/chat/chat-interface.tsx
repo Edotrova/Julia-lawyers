@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { format } from 'date-fns'
+import { format, isToday, isYesterday } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { Send, Users, MessageSquare, Search, MapPin, Building, Clock } from 'lucide-react'
 import { toast } from 'sonner'
@@ -817,30 +817,37 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
     return message.sender_id === currentUser
   }
 
-  // Funzione per formattare il timestamp: mostra data + orario se è il primo messaggio del giorno
-  const formatMessageTimestamp = (message: Message, index: number) => {
+  // Funzione per formattare solo l'orario del messaggio
+  const formatMessageTimestamp = (message: Message) => {
+    const messageDate = new Date(message.created_at)
+    return format(messageDate, 'HH:mm', { locale: it })
+  }
+
+  // Funzione per verificare se un messaggio è il primo di un nuovo giorno
+  const isFirstMessageOfDay = (message: Message, index: number) => {
+    if (index === 0) return true
+    
     const messageDate = new Date(message.created_at)
     const messageDateOnly = format(messageDate, 'yyyy-MM-dd')
     
-    // Se è il primo messaggio, mostra sempre la data
-    if (index === 0) {
-      return format(messageDate, 'dd/MM/yyyy HH:mm', { locale: it })
-    }
-    
-    // Controlla se il messaggio precedente è dello stesso giorno
     const previousMessage = messages[index - 1]
-    if (previousMessage) {
-      const previousDate = new Date(previousMessage.created_at)
-      const previousDateOnly = format(previousDate, 'yyyy-MM-dd')
-      
-      // Se il giorno è diverso, mostra la data
-      if (messageDateOnly !== previousDateOnly) {
-        return format(messageDate, 'dd/MM/yyyy HH:mm', { locale: it })
-      }
-    }
+    if (!previousMessage) return true
     
-    // Altrimenti mostra solo l'orario
-    return format(messageDate, 'HH:mm', { locale: it })
+    const previousDate = new Date(previousMessage.created_at)
+    const previousDateOnly = format(previousDate, 'yyyy-MM-dd')
+    
+    return messageDateOnly !== previousDateOnly
+  }
+
+  // Funzione per formattare la data nella linea separatrice
+  const formatDateSeparator = (date: Date) => {
+    if (isToday(date)) {
+      return 'Oggi'
+    } else if (isYesterday(date)) {
+      return 'Ieri'
+    } else {
+      return format(date, 'EEEE d MMMM yyyy', { locale: it })
+    }
   }
 
   if (loading && chatRooms.length === 0) {
@@ -1130,38 +1137,56 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                 <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden">
                   {/* Messaggi - area scrollabile */}
                   <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
-                    {messages.map((message, index) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${isMyMessage(message) ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div
-                          className={`max-w-[80%] p-3 rounded-lg ${
-                            isMyMessage(message)
-                              ? 'bg-canossa-red text-white'
-                              : 'bg-gray-100 text-gray-900 canossa-border-accent'
-                          }`}
-                        >
-                          <div className="flex items-center space-x-2 mb-1">
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage src={message.profiles?.avatar_url || undefined} />
-                              <AvatarFallback className="text-xs">
-                                {message.profiles?.first_name?.[0]}{message.profiles?.last_name?.[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm font-medium">
-                              {message.profiles?.first_name} {message.profiles?.last_name}
-                            </span>
+                    {messages.map((message, index) => {
+                      const messageDate = new Date(message.created_at)
+                      const showDateSeparator = isFirstMessageOfDay(message, index)
+                      
+                      return (
+                        <div key={message.id} className="space-y-3">
+                          {/* Linea separatrice con data */}
+                          {showDateSeparator && (
+                            <div className="flex items-center justify-center py-2">
+                              <div className="flex items-center space-x-2 w-full">
+                                <div className="flex-1 border-t border-gray-300"></div>
+                                <span className="text-xs text-gray-500 px-2 bg-white">
+                                  {formatDateSeparator(messageDate)}
+                                </span>
+                                <div className="flex-1 border-t border-gray-300"></div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Messaggio */}
+                          <div className={`flex ${isMyMessage(message) ? 'justify-end' : 'justify-start'}`}>
+                            <div
+                              className={`max-w-[80%] p-3 rounded-lg ${
+                                isMyMessage(message)
+                                  ? 'bg-canossa-red text-white'
+                                  : 'bg-gray-100 text-gray-900 canossa-border-accent'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-2 mb-1">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={message.profiles?.avatar_url || undefined} />
+                                  <AvatarFallback className="text-xs">
+                                    {message.profiles?.first_name?.[0]}{message.profiles?.last_name?.[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm font-medium">
+                                  {message.profiles?.first_name} {message.profiles?.last_name}
+                                </span>
+                              </div>
+                              <p className="text-sm">{message.content}</p>
+                              <p className={`text-xs mt-1 ${
+                                isMyMessage(message) ? 'text-blue-100' : 'text-gray-500'
+                              }`}>
+                                {formatMessageTimestamp(message)}
+                              </p>
+                            </div>
                           </div>
-                          <p className="text-sm">{message.content}</p>
-                          <p className={`text-xs mt-1 ${
-                            isMyMessage(message) ? 'text-blue-100' : 'text-gray-500'
-                          }`}>
-                            {formatMessageTimestamp(message, index)}
-                          </p>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                     <div ref={messagesEndRef} />
                   </div>
 
@@ -1318,27 +1343,45 @@ export function ChatInterface({ selectedUserId, selectedRoomId }: ChatInterfaceP
                   <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden">
                     {/* Messaggi - area scrollabile */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
-                      {messages.map((message, index) => (
-                        <div
-                          key={message.id}
-                          className={`flex ${isMyMessage(message) ? 'justify-end' : 'justify-start'}`}
-                        >
-                          <div
-                            className={`max-w-[80%] p-3 rounded-lg ${
-                              isMyMessage(message)
-                                ? 'bg-canossa-red text-white'
-                                : 'bg-gray-100 text-gray-900 canossa-border-accent'
-                            }`}
-                          >
-                            <p className="text-sm">{message.content}</p>
-                            <p className={`text-xs mt-1 ${
-                              isMyMessage(message) ? 'text-blue-100' : 'text-gray-500'
-                            }`}>
-                              {formatMessageTimestamp(message, index)}
-                            </p>
+                      {messages.map((message, index) => {
+                        const messageDate = new Date(message.created_at)
+                        const showDateSeparator = isFirstMessageOfDay(message, index)
+                        
+                        return (
+                          <div key={message.id} className="space-y-3">
+                            {/* Linea separatrice con data */}
+                            {showDateSeparator && (
+                              <div className="flex items-center justify-center py-2">
+                                <div className="flex items-center space-x-2 w-full">
+                                  <div className="flex-1 border-t border-gray-300"></div>
+                                  <span className="text-xs text-gray-500 px-2 bg-white">
+                                    {formatDateSeparator(messageDate)}
+                                  </span>
+                                  <div className="flex-1 border-t border-gray-300"></div>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Messaggio */}
+                            <div className={`flex ${isMyMessage(message) ? 'justify-end' : 'justify-start'}`}>
+                              <div
+                                className={`max-w-[80%] p-3 rounded-lg ${
+                                  isMyMessage(message)
+                                    ? 'bg-canossa-red text-white'
+                                    : 'bg-gray-100 text-gray-900 canossa-border-accent'
+                                }`}
+                              >
+                                <p className="text-sm">{message.content}</p>
+                                <p className={`text-xs mt-1 ${
+                                  isMyMessage(message) ? 'text-blue-100' : 'text-gray-500'
+                                }`}>
+                                  {formatMessageTimestamp(message)}
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                       <div ref={messagesEndRef} />
                     </div>
 
